@@ -8,6 +8,7 @@ import statistics as stats
 import MatrixGeneration #borrowed
 import random as r
 import threading
+import sys
 
 
 n = 1000
@@ -41,7 +42,7 @@ def GENERATE(n): # borowed
 
 def engine(l:float, r:float, Delta_P:float, Nu:float):
 
-#  make UNIVERSAL VAR of MATRIX AND LU FACTORIZATION
+    #make UNIVERSAL VAR of MATRIX AND LU
 
     global n
     global A
@@ -181,9 +182,9 @@ def calc4(outputs):
 # and viscosity and their corresponding calculated errors.
 
 task1 = threading.Thread(target=calc1,  args=[output], name='calc1').start()
-task2 = threading.Thread(target=calc2, args=[output], name='calc1').start() # argument for function must be inside list
-task3 = threading.Thread(target=calc3, args=[output], name='calc1').start()
-task4 = threading.Thread(target=calc4, args=[output] , name='calc1').start()
+task2 = threading.Thread(target=calc2, args=[output], name='calc2').start() # argument for function must be inside list
+task3 = threading.Thread(target=calc3, args=[output], name='calc3').start()
+task4 = threading.Thread(target=calc4, args=[output] , name='calc4').start()
 
 # write outputs to file
 while True:
@@ -191,33 +192,33 @@ while True:
     if output[0] != "table1" and output[1] != "table2" and output[2] != "table3" and output[3] != "table4":
 
         f = open("outputs.txt", "a")
-        f.write("*****TABLE 1*****\n\n LENGTH=10 CENTIMETERS AND RADIUS=0.1 METERS")
+        f.write("*****TABLE 1*****\n\n LENGTH=10 CENTIMETERS AND RADIUS=0.1 METERS\n")
         f.write(output[0])
         f.write("\n\n")
         f.close()
 
 
         f = open("outputs.txt", "a")
-        f.write("*****TABLE 2*****\n\n LENGTH=10 CENTIMETERS AND RADIUS=1 METER")
+        f.write("*****TABLE 2*****\n\n LENGTH=10 CENTIMETERS AND RADIUS=1 METER\n")
         f.write(output[1])
         f.write("\n\n")
         f.close()
 
 
         f = open("outputs.txt", "a")
-        f.write("*****TABLE 3*****\n\n LENGTH=30 CENTIMETERS AND RADIUS=0.1 METERS")
-        f.write(output[3])
+        f.write("*****TABLE 3*****\n\n LENGTH=30 CENTIMETERS AND RADIUS=0.1 METERS\n")
+        f.write(output[2])
         f.write("\n\n")
         f.close()
 
 
         f = open("outputs.txt", "a")
-        f.write("*****TABLE 4*****\n\n LENGTH=30 CENTIMETERS AND RADIUS=1 METER")
-        f.write(output[4])
+        f.write("*****TABLE 4*****\n\n LENGTH=30 CENTIMETERS AND RADIUS=1 METER\n")
+        f.write(output[3])
         f.write("\n\n")
         f.close()
 
-        break
+        sys.exit(0)
 
     else:
         continue
