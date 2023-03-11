@@ -9,36 +9,17 @@ import MatrixGeneration #borrowed
 import random as r
 import threading
 import sys
+import os
 
-
-n = 1000
-A = MatrixGeneration.GENERATE(1000)
+print("*=*=*=*=* INITIALIZING VALUES *=*=*=*=*")
+n = 10
+A = MatrixGeneration.GENERATE(n)
 U, L = LU.DECOMP(A, n, False)
 pressure_list = [] # keep track of normally distributed random values for pressure
 viscosity_list = [] # keep track of normally distributed random values for viscosity
-
 output = ["table1", "table2", "table3", "table4"]
-
-def GENERATE(n): # borowed
-    Matrix = []
-    # set up the matrix
-    for a in range(n):
-        Matrix.append([])
-        for b in range(n):
-            Matrix[a].append(0)
-
-    # insert values
-    i = 0
-    for j in range(0, n):
-        Matrix[j][j] = 2
-        if i == n - 1:
-            break
-        i = j + 1
-        Matrix[j][i] = -1
-        Matrix[i][j] = -1
-
-    return Matrix
-
+progress_bar = "" # append all progress of threads and print this repeatedly to the screen
+print("*=*=*=*=* DONE INITIALIZING VALUES *=*=*=*=*")
 
 def engine(l:float, r:float, Delta_P:float, Nu:float):
 
@@ -82,14 +63,23 @@ def engine(l:float, r:float, Delta_P:float, Nu:float):
 
 def calc1(outputs):
 
+    global progress_bar
+
     count = 0 # to keep track of iteration for table
     # set up table
     header = "|{: ^8} | {: ^30} | {: ^30} | {: ^30} | {: ^30}|".format('Iteration', 'Nu', 'P', 'Avg Absolute Error', 'Avg Relative Error')
     table = ""
     table += header + '\n'  # put newline
     table += ((len(header) + 2) * '-') + '\n'  # make division between header and body of table
+    prg_count = 0 # for the progress bar; reset and prints "|" char every 1000 iterations
 
     for i in range(10000):
+
+        if prg_count == 1000:
+            progress_bar += "|"
+            prg_count = 0
+        prg_count += 1
+
         count += 1
         Delta_P = r.randrange(1,1000) # unit: Pascals
         pressure_list.append(Delta_P)
@@ -106,14 +96,22 @@ def calc1(outputs):
 # Part Two: Generation of values for Radius = 10 centimeters, Length = 0.1 meters
 def calc2(outputs):
 
+    global progress_bar
+
     count = 0 # to keep track of iteration for table
     # set up table
     header = "|{: ^8} | {: ^30} | {: ^30} | {: ^30} | {: ^30}|".format('Iteration', 'Nu', 'P', 'Avg Absolute Error', 'Avg Relative Error')
     table = ""
     table += header + '\n'  # put newline
     table += ((len(header) + 2) * '-') + '\n'  # make division between header and body of table
-
+    prg_count = 0
     for i in range(10000):
+
+        if prg_count == 1000:
+            progress_bar += "|"
+            prg_count = 0
+        prg_count += 1
+
         count += 1
         Delta_P = r.randrange(1,1000) # unit: Pascals
         pressure_list.append(Delta_P)
@@ -129,6 +127,8 @@ def calc2(outputs):
 
 def calc3(outputs):
 
+    global progress_bar
+
     # to keep track of iteration for table
     count = 0
     # set up table
@@ -136,8 +136,14 @@ def calc3(outputs):
     table = ""
     table += header + '\n'  # put newline
     table += ((len(header) + 2) * '-') + '\n'  # make division between header and body of table
-
+    prg_count = 0
     for i in range(10000):
+
+        if prg_count == 1000:
+            progress_bar += "|"
+            prg_count = 0
+        prg_count += 1
+
         count += 1
         Delta_P = r.randrange(1,1000) # unit: Pascals
         pressure_list.append(Delta_P)
@@ -153,6 +159,8 @@ def calc3(outputs):
 
 def calc4(outputs):
 
+    global progress_bar
+
     # to keep track of iteration for table
     count = 0
     # set up table
@@ -160,8 +168,14 @@ def calc4(outputs):
     table = ""
     table += header + '\n'  # put newline
     table += ((len(header) + 2) * '-') + '\n'  # make division between header and body of table
-
+    prg_count = 0
     for i in range(10000):
+
+        if prg_count == 1000:
+            progress_bar += "|"
+            prg_count = 0
+        prg_count += 1
+
         count += 1
         Delta_P = r.randrange(1,1000) # unit: Pascals
         pressure_list.append(Delta_P)
@@ -181,6 +195,9 @@ def calc4(outputs):
 # each item of the list is appended to a file, item by item with individual markers and information about readings for pressure
 # and viscosity and their corresponding calculated errors.
 
+# Print progress
+
+
 task1 = threading.Thread(target=calc1,  args=[output], name='calc1').start()
 task2 = threading.Thread(target=calc2, args=[output], name='calc2').start() # argument for function must be inside list
 task3 = threading.Thread(target=calc3, args=[output], name='calc3').start()
@@ -188,6 +205,10 @@ task4 = threading.Thread(target=calc4, args=[output] , name='calc4').start()
 
 # write outputs to file
 while True:
+
+    os.system("cls")
+
+    print("\033[92m {}\033[00m".format("*=*=*=*=* PROGRESS: " + progress_bar + " *=*=*=*=*"))
 
     if output[0] != "table1" and output[1] != "table2" and output[2] != "table3" and output[3] != "table4":
 
@@ -218,7 +239,8 @@ while True:
         f.write("\n\n")
         f.close()
 
-        sys.exit(0)
+        if input("Exit(y/n): ").lower() == "y":
+            sys.exit(0)
 
     else:
         continue
