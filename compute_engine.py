@@ -71,7 +71,7 @@ def engine(l: float, r: float, Delta_P: float, Nu: float):
     return stats.mean(Absolute_error), stats.mean(Relative_error)
 
 
-# Part One: Generation of values for Radius = 10 centimeters, Length = 0.1 meters
+# Part One: Generation of values 
 
 def calc(outputs: list, index_writes: int, length: int, radius: int):
     global progress_bar
@@ -112,13 +112,12 @@ def calc(outputs: list, index_writes: int, length: int, radius: int):
 # each item of the list is appended to a file, item by item with individual markers and information about readings for pressure
 # and viscosity and their corresponding calculated errors.
 
-# Print progress
+task1 = threading.Thread(target=calc, args=[output, 0, 0.1, 10], name='calc1').start() #for Radius = 10 centimeters, Length = 0.1 meters
+task2 = threading.Thread(target=calc, args=[output, 1, 0.1, 100], name='calc2').start() # for Radius = 10 centimeters, Length = 1 meter
+task3 = threading.Thread(target=calc, args=[output, 2, 0.3, 10], name='calc3').start() # for Radius = 30 centimeters, Length = 0.1 meters
+task4 = threading.Thread(target=calc, args=[output, 3, 0.3, 100], name='calc4').start() #for Radius = 30 centimeters, Length = 1 meter
 
-
-task1 = threading.Thread(target=calc, args=[output, 0, 0.1, 10], name='calc1').start()
-task2 = threading.Thread(target=calc, args=[output, 1, 0.1, 100], name='calc2').start()  # argument for function must be inside list
-task3 = threading.Thread(target=calc, args=[output, 2, 0.3, 10], name='calc3').start()
-task4 = threading.Thread(target=calc, args=[output, 3, 0.3, 100], name='calc4').start()
+ # argument for function must be inside list
 
 # write outputs to file
 while True:
