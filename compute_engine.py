@@ -21,7 +21,7 @@ pressure_list = []  # keep track of normally distributed random values for press
 viscosity_list = []  # keep track of normally distributed random values for viscosity
 rel_error_list = [0,0,0,0]
 abs_error_list = [0,0,0,0]
-output = ["table1", "table2", "table3", "table4"]
+output = ["table", "table", "table", "table"]
 progress_bar = ""  # append all progress of threads and print this repeatedly to the screen
 print("*=*=*=*=* DONE INITIALIZING VALUES *=*=*=*=*")
 
@@ -141,7 +141,7 @@ while True:
     os.system("cls")
 
     print("\033[92m {}\033[00m".format("*=*=*=*=* PROGRESS: " + progress_bar + " *=*=*=*=*"))
-
+# TODO CHECK IF ALL OF THE VALUES IN TEH LIST HAVE BEEN MODIFIED
     if output[0] != "table1" and output[1] != "table2" and output[2] != "table3" and output[3] != "table4":
 
         file = open("outputs.txt", "a")
@@ -162,20 +162,21 @@ while True:
         file.write("\n\n")
         file.close()
 
-        file = open("outputs.txt", "a")
-        file.write("*****TABLE 4*****\n\n LENGTH=30 CENTIMETERS AND RADIUS=1 METER\n")
-        file.write(output[3])
-        file.write("\n\n")
-        file.close()
 
-        for i in range(4):
-            plt.plot(abs_error_list[i])
-            plt.show()
-            # plt.plot(rel_error_list[i])
-            # plt.show()
+
 #TODO run 10 diamteres (choose range) and 10 lengths (100 tables) , save the plots
+
         if input("Exit(y/n): ").lower() == "y":
             sys.exit(0)
 
     else:
         continue
+
+def graph(r:int, l:int, output_list:list, output_index, table_num:int):
+    file = open("outputs.txt", "a")
+    file.write("*****{TABLE}*****\n\n LENGTH= {a} CENTIMETERS AND RADIUS={b} METER\n".format(TABLE=str(table_num), a=l, b=r))
+    file.write(output_list[output_index])
+    file.write("\n\n")
+    file.close()
+
+
