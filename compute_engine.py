@@ -1,33 +1,36 @@
 # Christopher Lama
-# Special thanks to Dr. Charles Thangaraj
+# Special thanks to Dr. Charles Thangaraj and Dr. Arati Pati
 # Code borrowed and adapted from https://github.com/ChristopherL891123/Research--Code-Development-for-Flow-Simulation
 # Code borrowed uses Length of artery in meters and Radius of artery is in centimeters
-import matplotlib.pyplot as plt
+
 
 import LU  # borrowed
 import statistics as stats
 import MatrixGeneration  # borrowed
-import matplotlib as m
+import matplotlib.pyplot as plt
 import random as r
 import threading
-import sys
-import os
+
 
 print("*=*=*=*=* INITIALIZING VALUES *=*=*=*=*")
-n = 10
-A = MatrixGeneration.GENERATE(n)
-U, L = LU.DECOMP(A, n, False)
+n = 1000 # size of matrix
+A = MatrixGeneration.GENERATE(n) # generate the matrix
+U, L = LU.DECOMP(A, n, False) # decompose it
 pressure_list = []  # keep track of normally distributed random values for pressure
 viscosity_list = []  # keep track of normally distributed random values for viscosity
-rel_error_list = [0,0,0,0]
-abs_error_list = [0,0,0,0]
-output = ["table", "table", "table", "table"]
-progress_bar = ""  # append all progress of threads and print this repeatedly to the screen
+rel_error_list = [0 for i in range(100)] # list of placeholders for average relative error for each run. Will be made up of nested lists where each nested list is the average for each run
+abs_error_list = [0 for i in range(100)] # list of placeholders for average absolute error for each run. Will be made up of nested lists where each nested list is the average for each run
+output = [" " for i in range(100)]
+repeat = [] # used in cont()
 print("*=*=*=*=* DONE INITIALIZING VALUES *=*=*=*=*")
 
-
+# Part One: Generation of values
 def engine(l: float, r: float, Delta_P: float, Nu: float):
+
     """
+    Description: used to compute and return two float values: average relative and absolute error.
+    Will be called repeatedly to calculate list of absolute and relative error averages for plotting.
+    Uses code borrowed and outfitted from "Code Development for Flow Simulation" by Christopher Lama, Advisor: Dr. Arati Nanda Pati
 
     Args:
         l: length of artery
@@ -39,7 +42,7 @@ def engine(l: float, r: float, Delta_P: float, Nu: float):
         Absolute_error: list with calculated absolute errors for the table
     """
 
-    # make UNIVERSAL VAR of MATRIX AND LU
+    # use A and U,L as global variables to avoid unnecessary re-computation
 
     global n
     global A
@@ -72,21 +75,37 @@ def engine(l: float, r: float, Delta_P: float, Nu: float):
     Absolute_error.append(0.0)
     Relative_error.append(0.0)
 
+
     return stats.mean(Absolute_error), stats.mean(Relative_error)
 
 
-# Part One: Generation of values 
 
-def calc(outputs: list, index_writes: int, rel_write_index: int, abs_write_index: int, length: int, radius: int):
+def calc(outputs: list, index_writes: int, rel_write_index, abs_write_index, length: int, radius: int):
+    """
+        Description:
+
+        Args:
+            outputs: used to store table outputs.
+            index_writes: tells the program at what index of outputs var to write the generated table to.
+            rel_write_index: tells the program at what index of rel_error_list var to write the generated average relative errors to.
+            abs_write_index: tells the program at what index of abs_error_list var to write the generated average absolute errors to.
+            length: length of the artery.
+            radius: radius of the artery.
+
+        Returns: None
+
+        """
+
     global progress_bar
     global rel_error_list
     global abs_error_list
 
     count = 0  # to keep track of iteration for table
+
     # set up table
     header = "|{: ^8} | {: ^30} | {: ^30} | {: ^30} | {: ^30}|".format('Iteration', 'Nu', 'P', 'Avg Absolute Error',
                                                                        'Avg Relative Error')
-    table = ""
+    table = "***** {a} *****\n\n LENGTH={b} CENTIMETERS AND RADIUS={c} METERS\n\n\n".format(a="TABLE "+str(index_writes), b=str(length), c=str(radius))
     table += header + '\n'  # put newline
     table += ((len(header) + 2) * '-') + '\n'  # make division between header and body of table
     prg_count = 0  # for the progress bar; reset and prints "|" char every 1000 iterations
@@ -117,66 +136,63 @@ def calc(outputs: list, index_writes: int, rel_write_index: int, abs_write_index
 
     rel_error_list[rel_write_index] = temp_rel_err
     abs_error_list[abs_write_index] = temp_abs_err
-
     outputs[index_writes] = table
 
-
-
-# --> Run code <--
+# *=*=*=*=* Run code *=*=*=*=*
 
 # code is multithreaded, all results are written to a list. After all threads have written resulting table of values to the list,
 # each item of the list is appended to a file, item by item with individual markers and information about readings for pressure
-# and viscosity and their corresponding calculated errors.
+# and viscosity and their corresponding calculated errors. Then Absolute vs Relative errors are plotted and saved to an image file each
 
-task1 = threading.Thread(target=calc, args=[output, 0, 0,0, 0.1, 10], name='calc1').start() #for Radius = 10 centimeters, Length = 0.1 meters
-task2 = threading.Thread(target=calc, args=[output, 1, 1,1  ,0.1, 100], name='calc2').start() # for Radius = 10 centimeters, Length = 1 meter
-task3 = threading.Thread(target=calc, args=[output, 2, 2,2 ,0.3, 10], name='calc3').start() # for Radius = 30 centimeters, Length = 0.1 meters
-task4 = threading.Thread(target=calc, args=[output, 3, 3,3 , 0.3, 100], name='calc4').start() #for Radius = 30 centimeters, Length = 1 meter
+def main():
+    """
+        Description: main executable program. Makes threads to efficiently iterate many times through the calc function
+        to generate the tables and data for plots for different values for lengths and radius.
+        Writes to disk the tables and saves the plots as images.
 
- # argument for function must be inside list
+        Args:
+            None
 
-# write outputs to file
-while True:
+        Returns:
+            None
+        """
 
-    os.system("cls")
+    write_index = 0
+    temp_index_tables = 0
+    c2 = 0
+    length_range = [i for i in range(10, 110, 10)]
+    radius_range = [(i + 1) / 10.00 for i in range(0, 10)]  # avoid the initial 0.0 # can't do floats in range() https://stackoverflow.com/questions/7267226/range-for-floats
 
-    print("\033[92m {}\033[00m".format("*=*=*=*=* PROGRESS: " + progress_bar + " *=*=*=*=*"))
-# TODO CHECK IF ALL OF THE VALUES IN TEH LIST HAVE BEEN MODIFIED
-    if output[0] != "table1" and output[1] != "table2" and output[2] != "table3" and output[3] != "table4":
+    count = 0
+    for i in range(10):
+        l_ = length_range[i]
+        for j in range(10):
+            r_ = radius_range[j]
+            task1 = threading.Thread(target=calc, args=[output, temp_index_tables, write_index, write_index, l_, r_], name='thread').start()
+            count += 1
+            write_index += 1
+            temp_index_tables += 1
 
-        file = open("outputs.txt", "a")
-        file.write("*****TABLE 1*****\n\n LENGTH=10 CENTIMETERS AND RADIUS=0.1 METERS\n")
-        file.write(output[0])
-        file.write("\n\n")
-        file.close()
+    index = 0
+    while True:
+        if index >= 100:
+            exit(0)
+            print([char for char in "FINISHED"])
 
-        file = open("outputs.txt", "a")
-        file.write("*****TABLE 2*****\n\n LENGTH=10 CENTIMETERS AND RADIUS=1 METER\n")
-        file.write(output[1])
-        file.write("\n\n")
-        file.close()
+        if output[index] != " ":
 
-        file = open("outputs.txt", "a")
-        file.write("*****TABLE 3*****\n\n LENGTH=30 CENTIMETERS AND RADIUS=0.1 METERS\n")
-        file.write(output[2])
-        file.write("\n\n")
-        file.close()
+            file = open("outputs.txt", "a")
+            file.write(output[index])
+            file.close()
+            print("wrote to file")
+            plt.plot(abs_error_list[index],rel_error_list[index])
+            plt.savefig("{a}.png".format(a=str(c2)), bbox_inches="tight")  # https://stackoverflow.com/questions/9622163/save-plot-to-image-file-instead-of-displaying-it-using-matplotlib
+            plt.clf() #https://www.tutorialspoint.com/how-do-i-close-all-the-open-pyplot-windows-matplotlib
 
+            c2 += 1
+            index += 1
 
+        else:
+            continue
 
-#TODO run 10 diamteres (choose range) and 10 lengths (100 tables) , save the plots
-
-        if input("Exit(y/n): ").lower() == "y":
-            sys.exit(0)
-
-    else:
-        continue
-
-def graph(r:int, l:int, output_list:list, output_index, table_num:int):
-    file = open("outputs.txt", "a")
-    file.write("*****{TABLE}*****\n\n LENGTH= {a} CENTIMETERS AND RADIUS={b} METER\n".format(TABLE=str(table_num), a=l, b=r))
-    file.write(output_list[output_index])
-    file.write("\n\n")
-    file.close()
-
-
+main()
