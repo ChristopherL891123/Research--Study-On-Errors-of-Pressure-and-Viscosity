@@ -3,6 +3,9 @@
 # Code borrowed and adapted from https://github.com/ChristopherL891123/Research--Code-Development-for-Flow-Simulation
 # Code borrowed uses Length of artery in meters and Radius of artery is in centimeters
 
+# The units of viscosity are Pa · s = (N/m2) · s or Poise (dynes · s/cm2) with 1 Pa · s = 10 Poise
+#normal blood viscosity is η = (3 ∼ 4) · 10−3 Pa · s
+#v = (2.8 to 3.8)*(10)^-2 m^2/s
 
 import LU  # borrowed
 import statistics as stats
@@ -10,10 +13,11 @@ import MatrixGeneration  # borrowed
 import matplotlib.pyplot as plt
 import random as r
 import threading
+import pprint
 
 
 print("*=*=*=*=* INITIALIZING VALUES *=*=*=*=*")
-n = 1000 # size of matrix
+n = 10 # size of matrix
 A = MatrixGeneration.GENERATE(n) # generate the matrix
 U, L = LU.DECOMP(A, n, False) # decompose it
 pressure_list = []  # keep track of normally distributed random values for pressure
@@ -22,6 +26,8 @@ rel_error_list = [0 for i in range(100)] # list of placeholders for average rela
 abs_error_list = [0 for i in range(100)] # list of placeholders for average absolute error for each run. Will be made up of nested lists where each nested list is the average for each run
 output = [" " for i in range(100)]
 repeat = [] # used in cont()
+progress_bar = ""
+event = threading.Event()
 print("*=*=*=*=* DONE INITIALIZING VALUES *=*=*=*=*")
 
 # Part One: Generation of values
@@ -137,6 +143,7 @@ def calc(outputs: list, index_writes: int, rel_write_index, abs_write_index, len
     rel_error_list[rel_write_index] = temp_rel_err
     abs_error_list[abs_write_index] = temp_abs_err
     outputs[index_writes] = table
+    event.set()
 
 # *=*=*=*=* Run code *=*=*=*=*
 
@@ -163,21 +170,82 @@ def main():
     length_range = [i for i in range(10, 110, 10)]
     radius_range = [(i + 1) / 10.00 for i in range(0, 10)]  # avoid the initial 0.0 # can't do floats in range() https://stackoverflow.com/questions/7267226/range-for-floats
 
-    count = 0
+    subsets_length = []
+    subsets_radius = []
+
+    tempLength = []  # where to store the temporary subset
+    tempRadius = []
+    cut = 0  # tell loop when to cut the flow of data, to append only two numbers into a subset.
+    diff = 2
+
     for i in range(10):
-        l_ = length_range[i]
-        for j in range(10):
-            r_ = radius_range[j]
-            task1 = threading.Thread(target=calc, args=[output, temp_index_tables, write_index, write_index, l_, r_], name='thread').start()
-            count += 1
-            write_index += 1
-            temp_index_tables += 1
+
+        if cut == 2:
+            subsets_length.append(tempLength)
+            subsets_radius.append(tempRadius)
+            tempLength = []
+            tempRadius = []
+            tempLength.append(length_range[i])
+            tempRadius.append(radius_range[i])
+            cut = 1
+            # data is cut, but when the loop restarts it moves on with the next value, does not append index 2 as an operation was done at i = 2.
+        else:
+            tempLength.append(length_range[i])
+            tempRadius.append(radius_range[i])
+            cut += 1
+
+    subsets_length.append(tempLength)  # append last values
+    subsets_radius.append(tempRadius)  # append last values
+    del tempLength
+    del tempRadius
+
+    # have 10 threads running at any given time; pc is at least 10 threads.
+    thread_count = 0
+    thread_table = {}
+    for subsets_l in subsets_length:
+        for length_readings in subsets_l:
+            for subsets_r in subsets_radius:
+                for radius_readings in subsets_r:
+                    if thread_count < 10:  # if less than 10 treads running, run new thread
+                        thread = threading.Thread(target=calc, name="thread{}".format(thread_count),
+                                                  args=[output, temp_index_tables, write_index,write_index, length_readings,
+                                                        radius_readings] )
+                        thread.start() # start the thread asynchronously
+                        thread_count += 1
+
+                        thread_table.update({"thread{}".format(thread_count): [thread.name, thread.ident, thread.is_alive()]})
+
+                        write_index += 1
+                        temp_index_tables += 1
+
+                        # if event.wait() == False: # wait until event.set() is called in one of the threads(thread finishes)
+                        #     thread_count -= 1
+                        #     print("*****CURRENT THREAD COUNT: ", thread_count, "*****")
+
+                        # debugging
+                        print("************************\n\n")
+                        pprint.pprint(thread_table)
+                        print("************************\n\n")
+                        # debugging
+
+                        # debugging
+
+                        # look for inactive threads
+                        for thread in thread_table:
+                            if False in thread_table[thread]:
+                                del thread_table[thread]
+                                thread_count -= 1
+                        # debugging
+
+
+
 
     index = 0
     while True:
-        if index >= 100:
-            exit(0)
+
+        if index == 100:
             print([char for char in "FINISHED"])
+            exit(0)
 
         if output[index] != " ":
 
@@ -185,9 +253,10 @@ def main():
             file.write(output[index])
             file.close()
             print("wrote to file")
-            plt.plot(abs_error_list[index],rel_error_list[index])
-            plt.savefig("{a}.png".format(a=str(c2)), bbox_inches="tight")  # https://stackoverflow.com/questions/9622163/save-plot-to-image-file-instead-of-displaying-it-using-matplotlib
-            plt.clf() #https://www.tutorialspoint.com/how-do-i-close-all-the-open-pyplot-windows-matplotlib
+            plt.plot(abs_error_list[index], rel_error_list[index])
+            plt.savefig("{a}.png".format(a=str(c2)),
+                        bbox_inches="tight")  # https://stackoverflow.com/questions/9622163/save-plot-to-image-file-instead-of-displaying-it-using-matplotlib
+            plt.clf()  # https://www.tutorialspoint.com/how-do-i-close-all-the-open-pyplot-windows-matplotlib
 
             c2 += 1
             index += 1
