@@ -6,7 +6,8 @@
 # The units of viscosity are Pa · s = (N/m2) · s or Poise (dynes · s/cm2) with 1 Pa · s = 10 Poise
 #normal blood viscosity is η = (3 ∼ 4) · 10−3 Pa · s
 #v = (2.8 to 3.8)*(10)^-2 m^2/s
-
+#mmhg t pa s
+#sigma = v_nom/6
 import LU  # borrowed
 import statistics as stats
 import MatrixGeneration  # borrowed
