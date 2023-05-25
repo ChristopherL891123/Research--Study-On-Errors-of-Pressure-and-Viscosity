@@ -12,6 +12,7 @@ import LU  # borrowed
 import statistics as stats
 import MatrixGeneration  # borrowed
 import matplotlib.pyplot as plt
+import numpy as np
 import random as r
 import threading
 import pprint
@@ -28,6 +29,8 @@ abs_error_list = [0 for i in range(100)] # list of placeholders for average abso
 output = [" " for i in range(100)]
 repeat = [] # used in cont()
 progress_bar = ""
+s1 = np.random.dist(0.035/1.5, 0.035*1.5, 10000) #viscosity nominal/1.5 , viscosity nominal * 1.5
+s2 = np.random.dist(0.32/1.5, 0.32*1.5,10000)
 event = threading.Event()
 print("*=*=*=*=* DONE INITIALIZING VALUES *=*=*=*=*")
 
