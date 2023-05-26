@@ -6,15 +6,17 @@
 # The units of viscosity are Pa · s = (N/m2) · s or Poise (dynes · s/cm2) with 1 Pa · s = 10 Poise
 #normal blood viscosity is η = (3 ∼ 4) · 10−3 Pa · s
 #v = (2.8 to 3.8)*(10)^-2 m^2/s
-
+#mmhg t pa s
+#sigma = v_nom/6
 import LU  # borrowed
 import statistics as stats
 import MatrixGeneration  # borrowed
 import matplotlib.pyplot as plt
+import numpy as np
 import random as r
 import threading
 import pprint
-import time
+
 
 print("*=*=*=*=* INITIALIZING VALUES *=*=*=*=*")
 n = 10 # size of matrix
@@ -27,6 +29,8 @@ abs_error_list = [0 for i in range(100)] # list of placeholders for average abso
 output = [" " for i in range(100)]
 repeat = [] # used in cont()
 progress_bar = ""
+s1 = np.random.dist(0.035/1.5, 0.035*1.5, 10000) #viscosity nominal/1.5 , viscosity nominal * 1.5
+s2 = np.random.dist(0.32/1.5, 0.32*1.5,10000)
 event = threading.Event()
 print("*=*=*=*=* DONE INITIALIZING VALUES *=*=*=*=*")
 
@@ -143,7 +147,6 @@ def calc(outputs: list, index_writes: int, rel_write_index, abs_write_index, len
     rel_error_list[rel_write_index] = temp_rel_err
     abs_error_list[abs_write_index] = temp_abs_err
     outputs[index_writes] = table
-    event.set()
 
 # *=*=*=*=* Run code *=*=*=*=*
 
