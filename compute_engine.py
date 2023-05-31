@@ -12,8 +12,7 @@ import LU  # borrowed
 import statistics as stats
 import MatrixGeneration  # borrowed
 import matplotlib.pyplot as plt
-import numpy as np
-import random as r
+import random
 import threading
 import pprint
 
@@ -24,13 +23,11 @@ A = MatrixGeneration.GENERATE(n) # generate the matrix
 U, L = LU.DECOMP(A, n, False) # decompose it
 pressure_list = []  # keep track of normally distributed random values for pressure
 viscosity_list = []  # keep track of normally distributed random values for viscosity
-rel_error_list = [0 for i in range(100)] # list of placeholders for average relative error for each run. Will be made up of nested lists where each nested list is the average for each run
-abs_error_list = [0 for i in range(100)] # list of placeholders for average absolute error for each run. Will be made up of nested lists where each nested list is the average for each run
-output = [" " for i in range(100)]
+rel_error_list = [0 for i in range(n)] # list of placeholders for average relative error for each run. Will be made up of nested lists where each nested list is the average for each run
+abs_error_list = [0 for i in range(n)] # list of placeholders for average absolute error for each run. Will be made up of nested lists where each nested list is the average for each run
+output = [" " for i in range(n)]
 repeat = [] # used in cont()
 progress_bar = ""
-s1 = np.random.dist(0.035/1.5, 0.035*1.5, 10000) #viscosity nominal/1.5 , viscosity nominal * 1.5
-s2 = np.random.dist(0.32/1.5, 0.32*1.5,10000)
 event = threading.Event()
 print("*=*=*=*=* DONE INITIALIZING VALUES *=*=*=*=*")
 
@@ -131,18 +128,18 @@ def calc(outputs: list, index_writes: int, rel_write_index, abs_write_index, len
         prg_count += 1
 
         count += 1
-        Delta_P = r.randrange(1, 1000)  # unit: Pascals
-        pressure_list.append(Delta_P)
-        Nu = r.randrange(1, 1000)  # unit: Pa*s
-        viscosity_list.append(Nu)
+        pressure_random_reading = random.gauss(0.32 / 1.5, 0.32 * 1.5)
+        pressure_list.append(pressure_random_reading)
+        viscosity_random_reading = random.gauss(0.035 / 1.5,0.035 * 1.5)  # viscosity nominal/1.5 , viscosity nominal * 1.5
+        viscosity_list.append(viscosity_random_reading)
 
-        avg_abs, avg_rel = engine(l=length, r=radius, Delta_P=Delta_P, Nu=Nu)  # unit of l: meters, unit of r: centimeters
+        avg_abs, avg_rel = engine(l=length, r=radius, Delta_P=pressure_random_reading, Nu=viscosity_random_reading)  # unit of l: meters, unit of r: centimeters
 
         temp_abs_err.append(avg_abs)
         temp_rel_err.append(avg_rel)
 
         # add row of values to table
-        table += "|{: ^8} | {: ^30} | {: ^30} | {: ^30} | {: ^30}|".format(count, Nu, Delta_P, avg_abs, avg_rel) + '\n'
+        table += "|{: ^8} | {: ^30} | {: ^30} | {: ^30} | {: ^30}|".format(count, viscosity_random_reading, pressure_random_reading, avg_abs, avg_rel) + '\n'
 
     rel_error_list[rel_write_index] = temp_rel_err
     abs_error_list[abs_write_index] = temp_abs_err
@@ -225,11 +222,11 @@ def main():
                         #     thread_count -= 1
                         #     print("*****CURRENT THREAD COUNT: ", thread_count, "*****")
 
-                        # debugging
-                        print("************************\n\n")
-                        pprint.pprint(thread_table)
-                        print("************************\n\n")
-                        # debugging
+                        # # debugging
+                        # print("************************\n\n")
+                        # pprint.pprint(thread_table)
+                        # print("************************\n\n")
+                        # # debugging
 
                         # debugging
 
@@ -246,8 +243,8 @@ def main():
     index = 0
     while True:
 
-        if index == 100:
-            print([char for char in "FINISHED"])
+        if index == n:
+            print(char for char in "FINISHED")
             exit(0)
 
         if output[index] != " ":
@@ -256,8 +253,11 @@ def main():
             file.write(output[index])
             file.close()
             print("wrote to file")
-            plt.plot(abs_error_list[index], rel_error_list[index])
+            plt.hist(rel_error_list[index]) # wants arrays
             plt.savefig("{a}.png".format(a=str(c2)),
+                        bbox_inches="tight")
+            plt.hist(abs_error_list[index])
+            plt.savefig("{b}.png".format(b=str(c2+1)),
                         bbox_inches="tight")  # https://stackoverflow.com/questions/9622163/save-plot-to-image-file-instead-of-displaying-it-using-matplotlib
             plt.clf()  # https://www.tutorialspoint.com/how-do-i-close-all-the-open-pyplot-windows-matplotlib
 
