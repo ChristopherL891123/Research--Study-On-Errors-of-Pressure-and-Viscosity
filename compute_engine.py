@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 import random
 import threading
 import pprint
-
+import statistics
 
 
 print("*=*=*=*=* INITIALIZING VALUES *=*=*=*=*")
@@ -255,6 +255,16 @@ def main():
             file.close()
             print("wrote to file")
             plt.hist(rel_error_list[index], bins=200) # wants arrays
+            print("MEAN: ")
+            print(statistics.mean(rel_error_list[index]))
+            print("STANDARD DEVIATION: ")
+            print(statistics.stdev(rel_error_list[index]))
+            print("MEDIAN: ")
+            print(statistics.median(rel_error_list[index]))
+            print("MAX: ")
+            print(max(rel_error_list[index]))
+            print("MIN: ")
+            print(min(rel_error_list[index]))
             plt.savefig("outputsNoNumpy/{a}rel.png".format(a=str(c2)),
                         bbox_inches="tight")
             plt.hist(abs_error_list[index], bins=200)
