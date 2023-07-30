@@ -1,4 +1,4 @@
-﻿# Christopher Lama
+# Christopher Lama
 # Special thanks to Dr. Charles Thangaraj and Dr. Arati Pati
 # Code borrowed and adapted from https://github.com/ChristopherL891123/Research--Code-Development-for-Flow-Simulation
 # Code borrowed uses Length of artery in meters and Radius of artery is in centimeters
@@ -15,6 +15,7 @@ import matplotlib.pyplot as plt
 import random
 import threading
 import pprint
+
 
 
 print("*=*=*=*=* INITIALIZING VALUES *=*=*=*=*")
@@ -253,11 +254,11 @@ def main():
             file.write(output[index])
             file.close()
             print("wrote to file")
-            plt.hist(rel_error_list[index]) # wants arrays
-            plt.savefig("{a}.png".format(a=str(c2)),
+            plt.hist(rel_error_list[index], bins=200) # wants arrays
+            plt.savefig("outputsNoNumpy/{a}rel.png".format(a=str(c2)),
                         bbox_inches="tight")
-            plt.hist(abs_error_list[index])
-            plt.savefig("{b}.png".format(b=str(c2+1)),
+            plt.hist(abs_error_list[index], bins=200)
+            plt.savefig("outputsNoNumpy/{b}abs.png".format(b=str(c2)),
                         bbox_inches="tight")  # https://stackoverflow.com/questions/9622163/save-plot-to-image-file-instead-of-displaying-it-using-matplotlib
             plt.clf()  # https://www.tutorialspoint.com/how-do-i-close-all-the-open-pyplot-windows-matplotlib
 
