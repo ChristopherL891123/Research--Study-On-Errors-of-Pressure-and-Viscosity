@@ -30,7 +30,7 @@ output = [" " for i in range(n)]
 repeat = [] # used in cont()
 progress_bar = ""
 event = threading.Event()
-f = open("stats_outputs.txt",'w')
+f = open("stats_outputs_no_numpy.txt", 'w')
 print("*=*=*=*=* DONE INITIALIZING VALUES *=*=*=*=*")
 
 # Part One: Generation of values
@@ -251,9 +251,10 @@ def main():
 
         if output[index] != " ":
 
-            file = open("outputs.txt", "a")
+            file = open("outputs_no_numpy.txt", "a")
             file.write(output[index])
             file.close()
+
             print("wrote to file")
 
             f.write("HISTOGRAM {a} \n".format(a=str(index)))
