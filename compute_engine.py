@@ -30,6 +30,7 @@ output = [" " for i in range(n)]
 repeat = [] # used in cont()
 progress_bar = ""
 event = threading.Event()
+f = open("stats_outputs.txt",'w')
 print("*=*=*=*=* DONE INITIALIZING VALUES *=*=*=*=*")
 
 # Part One: Generation of values
@@ -254,22 +255,23 @@ def main():
             file.write(output[index])
             file.close()
             print("wrote to file")
-            plt.hist(rel_error_list[index], bins=200) # wants arrays
-            print("MEAN: ")
-            print(statistics.mean(rel_error_list[index]))
-            print("STANDARD DEVIATION: ")
-            print(statistics.stdev(rel_error_list[index]))
-            print("MEDIAN: ")
-            print(statistics.median(rel_error_list[index]))
-            print("MAX: ")
-            print(max(rel_error_list[index]))
-            print("MIN: ")
-            print(min(rel_error_list[index]))
+
+            f.write("HISTOGRAM {a} \n".format(a=str(index)))
+            str_write = ""
+            str_write += "MEAN: {a}".format(a=statistics.mean(rel_error_list[index])) + "\n"
+            str_write += "STANDARD DEVIATION: {a}".format(a=statistics.stdev(rel_error_list[index])) + "\n"
+            str_write += "MEDIAN: {a}".format(a=statistics.median(rel_error_list[index])) + "\n"
+            str_write += "MAX: {a}".format(a=max(rel_error_list[index])) + "\n"
+            str_write += "MIN: {a}".format(a=min(rel_error_list[index])) + "\n"
+            f.write(str_write)
+
+            plt.hist(rel_error_list[index], bins=200)  # wants arrays
             plt.savefig("outputsNoNumpy/{a}rel.png".format(a=str(c2)),
                         bbox_inches="tight")
-            plt.hist(abs_error_list[index], bins=200)
-            plt.savefig("outputsNoNumpy/{b}abs.png".format(b=str(c2)),
-                        bbox_inches="tight")  # https://stackoverflow.com/questions/9622163/save-plot-to-image-file-instead-of-displaying-it-using-matplotlib
+
+            plt.hist(abs_error_list[index])
+            plt.savefig("outputsNoNumpy/{a}abs.png".format(a=str(c2)),
+                        bbox_inches="tight")
             plt.clf()  # https://www.tutorialspoint.com/how-do-i-close-all-the-open-pyplot-windows-matplotlib
 
             c2 += 1
