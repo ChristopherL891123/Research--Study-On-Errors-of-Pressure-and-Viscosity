@@ -15,13 +15,15 @@ import matplotlib.pyplot as plt
 import random
 import threading
 import pprint
-import statistics
 
 
 print("*=*=*=*=* INITIALIZING VALUES *=*=*=*=*")
-n = 10 # size of matrix
+n = 10000 # size of matrix
 A = MatrixGeneration.GENERATE(n) # generate the matrix
+print("*=*=*=*=* INITIALIZED A MATRIX *=*=*=*=*")
 U, L = LU.DECOMP(A, n, False) # decompose it
+print("*=*=*=*=* INITIALIZED U , L MATRICES *=*=*=*=*")
+
 pressure_list = []  # keep track of normally distributed random values for pressure
 viscosity_list = []  # keep track of normally distributed random values for viscosity
 rel_error_list = [0 for i in range(n)] # list of placeholders for average relative error for each run. Will be made up of nested lists where each nested list is the average for each run
@@ -30,7 +32,6 @@ output = [" " for i in range(n)]
 repeat = [] # used in cont()
 progress_bar = ""
 event = threading.Event()
-f = open("stats_outputs_no_numpy.txt", 'w')
 print("*=*=*=*=* DONE INITIALIZING VALUES *=*=*=*=*")
 
 # Part One: Generation of values
@@ -251,28 +252,16 @@ def main():
 
         if output[index] != " ":
 
-            file = open("outputs_no_numpy.txt", "a")
+            file = open("outputs.txt", "a")
             file.write(output[index])
             file.close()
-
             print("wrote to file")
-
-            f.write("HISTOGRAM {a} \n".format(a=str(index)))
-            str_write = ""
-            str_write += "MEAN: {a}".format(a=statistics.mean(rel_error_list[index])) + "\n"
-            str_write += "STANDARD DEVIATION: {a}".format(a=statistics.stdev(rel_error_list[index])) + "\n"
-            str_write += "MEDIAN: {a}".format(a=statistics.median(rel_error_list[index])) + "\n"
-            str_write += "MAX: {a}".format(a=max(rel_error_list[index])) + "\n"
-            str_write += "MIN: {a}".format(a=min(rel_error_list[index])) + "\n"
-            f.write(str_write)
-
-            plt.hist(rel_error_list[index], bins=200)  # wants arrays
-            plt.savefig("outputsNoNumpy/{a}rel.png".format(a=str(c2)),
+            plt.hist(rel_error_list[index]) # wants arrays
+            plt.savefig("{a}rel.png".format(a=str(c2)),
                         bbox_inches="tight")
-
             plt.hist(abs_error_list[index])
-            plt.savefig("outputsNoNumpy/{a}abs.png".format(a=str(c2)),
-                        bbox_inches="tight")
+            plt.savefig("{b}abs.png".format(b=str(c2)),
+                        bbox_inches="tight")  # https://stackoverflow.com/questions/9622163/save-plot-to-image-file-instead-of-displaying-it-using-matplotlib
             plt.clf()  # https://www.tutorialspoint.com/how-do-i-close-all-the-open-pyplot-windows-matplotlib
 
             c2 += 1
